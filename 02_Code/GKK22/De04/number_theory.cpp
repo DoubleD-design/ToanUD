@@ -29,7 +29,7 @@ int bai1b(int m){
     int before = m - 1;
     int after = m + 1;
     while(before%5!=0) before--;
-    while (after%5!=0) after--;
+    while (after%5!=0) after++;
     int res;
     int count1 = abs(before - m);
     int count2 = abs(after - m);
