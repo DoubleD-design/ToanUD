@@ -260,7 +260,7 @@ void FindInverseMatrix(float A[][N], float inverse[][N], int n)
 
 int main()
 {
-  float A[N][N] = {{11, 2, 3}, {2, 17, 9}, {3, 9, 11}};
+  float A[N][N] = {{1, 3, 7}, {5, 6, 7}, {7, 9, 7}};
 
   float M[N][N];
   float M1[N][N];
