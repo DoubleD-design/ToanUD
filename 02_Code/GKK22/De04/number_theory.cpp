@@ -12,7 +12,7 @@ void bai1a(int n, int&m){
     int count = 0;
     int sum = 0;
     int res[1000];
-    for (int i = 1;i <=m;i++){
+    for (int i = 1;i <=n;i++){
         if (isperfect(i)) {
             sum+=i;
             res[count++] = i;
