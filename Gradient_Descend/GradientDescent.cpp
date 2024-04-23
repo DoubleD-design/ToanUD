@@ -1,18 +1,18 @@
 #include <iostream>
 #include <math.h>
 using namespace std; 
-const double gamma = 0.001;
-const double alpha = 0.1;
+const double gamma = 0.1;
+const double alpha = 0.9;
 const double e = 0.00001;
 double deriv(float x, char f){
     if (f == 'f')
-    return 2 * pow(e,(pow(x,5) - pow(x,3))) - 5 * pow(x,3) - x + log(x + 45) + 20;
+    return 2*((2*x)/(x*x+10)+1)*(log(x*x+10)+x-5)+2;
     else
     return 2*((2*x)/(x*x+15)+1)*(log(x*x+15)+x-15)+1;
 }
 double deriv2(float x, char f){
     if (f == 'f')
-    return 10 * pow(e,(pow(x,5) - pow(x,3))) * (pow(x,4) - pow(x,2)) - 15 * pow(x,2) - 1 + 1 / (x + 45);
+    return 2*(2/(x*x+10)-(4*x*x)/((x*x+10)*(x*x+10)))*(log(x*x+10)+x-5)+2*pow((2*x)/(x*x+10)+1,2);
     else 
         return 2*(2/(x*x+15)-(4*x*x)/((x*x+15)*(x*x+15)))*(log(x*x+15)+x-15)+2*pow((2*x)/(x*x+15)+1,2);
     }
@@ -45,7 +45,7 @@ double grad(double x, int n, char f){
     return x;
 }
 int main(){
-    int n = 10000;
+    int n = 1000;
     double x;
     char f;
     cin >> x;
