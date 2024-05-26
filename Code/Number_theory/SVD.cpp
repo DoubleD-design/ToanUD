@@ -1,32 +1,16 @@
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <cmath>
 using namespace std;
-#define MAX 100
-void transpose(float A[][MAX], float B[][MAX], int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            B[i][j] = A[j][i];
-    }
-}
-void swap(float &a, float &b)
-{
-    float temp;
-    temp = a;
-    a = b;
-    b = temp;
-}
-void printMatrix(float A[][MAX], int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            cout << setprecision(8) << A[i][j] << " ";
-        cout << endl;
-    }
-}
-void squareMatrixProduct(float A[][MAX], float B[][MAX], float C[][MAX], int n)
+const int MAX = 100;
+// Hàm nhân hai ma trận vuông A và B cấp n
+void Nhan2MaTranVuong(float A[][MAX], float B[][MAX], float C[][MAX], int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -40,39 +24,132 @@ void squareMatrixProduct(float A[][MAX], float B[][MAX], float C[][MAX], int n)
         }
     }
 }
-void SolvedCubic(float C[], float X[])
+// Tinh ma tran S
+void TinhMaTranAAT(float A[][MAX], int n, float S[][MAX])
 {
-    float delta, k;
-    delta = pow(C[1], 2) - 3 * C[0] * C[2];
-    k = (9 * C[0] * C[1] * C[2] - 2 * pow(C[1], 3) - 27 * pow(C[0], 2) * C[3]) / (2 * sqrt(pow(fabs(delta), 3)));
-    if (delta > 0)
-    {
-        if (fabs(k) <= 1)
-        {
-            X[0] = (2 * sqrt(delta) * cos(acos(k) / 3) - C[1]) / (3 * C[0]);
-            X[1] = (2 * sqrt(delta) * cos(acos(k) / 3 - (2 * M_PI / 3)) - C[1]) / (3 * C[0]);
-            X[2] = (2 * sqrt(delta) * cos(acos(k) / 3 + (2 * M_PI / 3)) - C[1]) / (3 * C[0]);
-        }
-        if (fabs(k) > 1)
-        {
-            X[0] = ((sqrt(delta) * fabs(k)) / (3 * C[0] * k)) * (pow((fabs(k) + sqrt(pow(k, 2) - 1)), 1.0 / 3) + pow((fabs(k) - sqrt(pow(k, 2) - 1)), 1.0 / 3)) - (C[1] / (3 * C[0]));
-        }
-    }
-    else if (delta == 0)
-    {
-        X[0] = (-C[1] - pow(-(pow(C[1], 3) - 27 * C[0] * C[0] * C[3]), 1.0 / 3)) / (3 * C[0]);
-    }
-    else
-        X[0] = (sqrt(fabs(delta)) / (3 * C[0])) * (pow((k + sqrt(k * k + 1)), 1.0 / 3) - pow(-(k - sqrt(k * k + 1)), 1.0 / 3)) - (C[1] / (3 * C[0]));
-}
-void EigenDecomposition(float A[][MAX], float P[][MAX], float D[][MAX], int n)
-{
-    float M[MAX][MAX], M1[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            if (j == i)
+            S[i][j] = 0;
+            for (int k = 0; k < n; k++)
+                S[i][j] += (A[k][i] * A[k][j]);
+        }
+    }
+}
+// Giải nghiệm phương trình bậc 2
+void GiaiPTBac2(float f[], float x[])
+{
+    // tính delta
+    float delta = f[1] * f[1] - 4 * f[0] * f[2];
+    // tính nghiệm
+    if (delta > 0)
+    {
+        x[0] = (float)((-f[1] + sqrt(delta)) / (2 * f[0]));
+        x[1] = (float)((-f[1] - sqrt(delta)) / (2 * f[0]));
+        x[2] = 2; // có 2 nghiệm
+    }
+    else if (delta == 0)
+    {
+        x[0] = (-f[1] / (2 * f[0]));
+        x[2] = 1; // có 1 nghiệm
+    }
+    else
+        return;
+}
+// Giải nghiệm phương trình bậc 3
+void GiaiPTBac3(float f[], float x[])
+{
+    float PI = 3.14159265358979323846;
+    float delta = (float)pow(f[1], 2) - 3 * f[0] * f[2];
+    float k = (float)(9 * f[0] * f[1] * f[2] - 2 * pow(f[1], 3) - 27 * pow(f[0], 2) * f[3]) / (2 * sqrt(fabs(pow(delta, 3))));
+    if (delta > 0)
+    {
+        if (fabs(k) <= 1)
+        {
+            x[0] = (2 * sqrt(delta) * cos((acos(k) / 3)) - f[1]) / (3 * f[0]);
+            x[1] = (2 * sqrt(delta) * cos((acos(k) / 3 - (2 * PI / 3))) - f[1]) / (3 * f[0]);
+            x[2] = (2 * sqrt(delta) * cos((acos(k) / 3 + (2 * PI / 3))) - f[1]) / (3 * f[0]);
+            x[3] = 3; // Có 3 nghiệm
+        }
+        else
+        {
+            x[0] = ((sqrt(delta) * fabs(k)) / (3 * f[0] * k)) * (pow(fabs(k) +
+                                                                         sqrt(pow(k, 2) - 1),
+                                                                     1.0 / 3) +
+                                                                 pow(fabs(k) - sqrt(pow(k, 2) - 1), 1.0 / 3)) -
+                   (f[1] / (3 * f[0]));
+        }
+    }
+    if (delta == 0)
+    {
+        x[0] = (-f[1] + pow(pow(f[1], 3) - 27 * pow(f[0], 2) * f[3], 1.0 / 3)) / (3 *
+                                                                                  f[0]);
+        x[3] = 1; // Có 1 nghiệm
+    }
+    if (delta < 0)
+    {
+        x[0] = (sqrt(fabs(delta)) / (3 * f[0])) * (pow(k + sqrt(pow(k, 2) + 1), 1.0 /
+                                                                                    3) +
+                                                   pow(k - sqrt(pow(k, 2) + 1), 1.0 / 3)) -
+               (f[1] / (3 * f[0]));
+        x[3] = 1; // Có 1 nghiệm
+    }
+}
+// Tính định thức ma trận vuông bậc n
+float det(float a[][MAX], int n)
+{
+    int i, j, k, dem = 0, kt;
+    float b[MAX], h, kq = 1;
+    for (i = 0; i < n - 1; i++)
+    {
+        if (a[i][i] == 0)
+        {
+            kt = 0;
+            for (j = i + 1; j < n; j++)
+            {
+                if (a[i][j] != 0)
+                {
+                    for (k = 0; k < n; k++)
+                    {
+                        float t = a[k][i];
+                        a[k][i] = a[k][j];
+                        a[k][j] = t;
+                    }
+                    dem++;
+                    kt++;
+                    break;
+                }
+            }
+            if (kt == 0)
+                return 0;
+        }
+        b[i] = a[i][i];
+        for (j = 0; j < n; j++)
+            a[i][j] /= b[i];
+        for (j = i + 1; j < n; j++)
+        {
+            h = a[j][i];
+            for (k = 0; k < n; k++)
+                a[j][k] = a[j][k] - h * a[i][k];
+        }
+    }
+    b[n - 1] = a[n - 1][n - 1];
+    for (i = 0; i < n; i++)
+        kq *= b[i];
+    if (dem % 2 == 0)
+        return kq;
+    return -kq;
+}
+void SVD(float S[][MAX], float A[][MAX], int m, int n)
+{
+    float M[MAX][MAX], M1[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
+    // Khởi tạo ma trận đơn vị C
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (i == j)
                 C[i][j] = 1;
             else
                 C[i][j] = 0;
@@ -80,6 +157,7 @@ void EigenDecomposition(float A[][MAX], float P[][MAX], float D[][MAX], int n)
     }
     for (int k = n - 2; k >= 0; k--)
     {
+        // Tính hai ma trận M M1
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
@@ -99,128 +177,163 @@ void EigenDecomposition(float A[][MAX], float P[][MAX], float D[][MAX], int n)
                 }
                 else
                 {
-                    M1[i][j] = A[k + 1][j];
+                    M1[i][j] = S[k + 1][j];
                     if (j == k)
-                        M[i][j] = 1.0 / A[k + 1][k];
+                        M[i][j] = 1.0 / S[k + 1][k];
                     else
-                        M[i][j] = -A[k + 1][j] / A[k + 1][k];
+                        M[i][j] = -S[k + 1][j] / S[k + 1][k];
                 }
             }
         }
-        squareMatrixProduct(A, M, B, n);
-        squareMatrixProduct(M1, B, A, n);
-        squareMatrixProduct(C, M, B, n);
+        Nhan2MaTranVuong(S, M, B, n);
+        Nhan2MaTranVuong(M1, B, S, n);
+        Nhan2MaTranVuong(C, M, B, n);
+        // Gán lại C = B
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
+            {
                 C[i][j] = B[i][j];
+            }
         }
     }
-    float heso[MAX] = {1, -A[0][0], -A[0][1], -A[0][2]};
-    cout << endl;
-    float X[MAX];
-    SolvedCubic(heso, X);
+    float f[n + 1];
+    f[0] = 1;
     for (int i = 0; i < n; i++)
+    {
+        f[i + 1] = -S[0][i];
+    }
+    float x[n + 1];
+    x[n] = 0;
+    if (n == 2)
+        GiaiPTBac2(f, x);
+    else
+        GiaiPTBac3(f, x);
+    float W[n][n];
+    for (int i = 0; i < m; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            if (i == j)
-                D[i][j] = X[i];
+            if (i == j && x[i] > 0)
+                W[i][j] = sqrt(x[i]);
             else
-                D[i][j] = 0;
+                W[i][j] = 0;
         }
     }
-    float T[MAX][MAX];
+    float T[n][n];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            T[i][j] = pow(X[j], n - i - 1);
+            T[i][j] = (float)pow(x[j], n - i - 1);
         }
     }
-    float P1[MAX][MAX];
-    squareMatrixProduct(B, T, P, n);
+    float P[MAX][MAX];
+    for (int j = 0; j < n; j++)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            P[i][j] = 0;
+            for (int k = 0; k < n; k++)
+            {
+                P[i][j] += B[i][k] * T[k][j];
+            }
+        }
+    }
+    // Chuẩn hóa ma trận P
     for (int j = 0; j < n; j++)
     {
         float p = 0;
         for (int i = 0; i < n; i++)
-            p += pow(P[i][j], 2);
+            p = p + P[i][j] * P[i][j];
         for (int i = 0; i < n; i++)
             P[i][j] = P[i][j] / sqrt(p);
     }
+    float U[n][n];
+    for (int j = 0; j < m; j++)
+    {
+        for (int i = 0; i < m; i++)
+        {
+            U[i][j] = 0;
+            for (int k = 0; k < n; k++)
+            {
+                U[i][j] += (A[i][k] * P[k][j]);
+            }
+            U[i][j] = U[i][j] / W[j][j];
+        }
+    }
+    cout << "Ma tran U: " << endl;
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cout << setw(10) << setprecision(5) << fixed << U[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << "Ma tran D: " << endl;
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            cout << setw(10) << setprecision(5) << fixed << W[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << "Ma tran V^T: " << endl;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            cout << setw(10) << setprecision(5) << fixed << P[j][i] << "\t";
+        }
+        cout << endl;
+    }
 }
-void SVD(float A[][MAX], int n)
+void nhapMaTran(float A[MAX][MAX], int m, int n)
 {
-    float At[MAX][MAX];
-    transpose(A, At, n);
-    float S[MAX][MAX], P[MAX][MAX], D[MAX][MAX], U[MAX][MAX];
-    squareMatrixProduct(At, A, S, n);
-    EigenDecomposition(S, P, D, n);
-    float Vt[MAX][MAX];
-    transpose(P, Vt, n);
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            D[i][j] = sqrt(D[i][j]);
-    }
-    squareMatrixProduct(A, P, U, n);
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)
         {
-            U[j][i] *= 1.0 / D[i][i];
+            cout << "a[" << i + 1 << "][" << j + 1 << "] = ";
+            cin >> A[i][j];
         }
-    }
-    // in ma tran
-    cout << "Singular value decomposition: " << endl;
-    cout << "U" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        // Ma tran U
-        for (int j = 0; j < n; j++)
-        {
-            if (j == 0)
-                cout << setprecision(4) << (-1 * U[i][j]) << "\t\t";
-            else
-                cout << setprecision(4) << U[i][j] << "\t\t";
-        }
-        cout << endl;
-    }
-    cout << endl;
-    cout << "D" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        // Ma tran Σ (ma trận D)
-        for (int j = 0; j < n; j++)
-            cout << setprecision(4) << D[i][j] << "\t\t";
-        cout << endl;
-    }
-    cout << endl;
-    cout << "Vt" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        // Ma tran Vt
-        for (int j = 0; j < n; j++)
-        {
-            if (i == 0)
-                cout << setprecision(4) << (-1 * Vt[i][j]) << "\t\t";
-            else
-                cout << setprecision(4) << Vt[i][j] << "\t\t";
-        }
-        cout << endl;
-    }
 }
 int main()
 {
-    int n = 3;
-    float A[][MAX] = {{7, 2, 1},
-                      {8, 5, 2},
-                      {1, 2, 6}};
-    float P[MAX][MAX];
-    cout << "Ma tran A:" << endl;
-    printMatrix(A, 3);
+    int m, n;
+    float A[MAX][MAX];
+    float S[MAX][MAX];
+    cout << "Nhap so hang m = ";
+    cin >> m;
+    cout << "Nhap so cot n = ";
+    cin >> n;
+    cout << "Nhap ma tran A: " << endl;
+    nhapMaTran(A, m, n);
     cout << "-------------------" << endl;
-    cout << "Phan ra SVD: " << endl;
-    SVD(A, n);
+    cout << "Ma tran A: " << endl;
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cout << setw(10) << setprecision(5) << fixed << A[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    TinhMaTranAAT(A, n, S);
+    cout << "-------------------" << endl;
+    cout << "Ma tran S = AA^T: " << endl;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            cout << setw(10) << setprecision(5) << fixed << S[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << "-------------------" << endl;
+    cout << "Phan ra SVD: A = UDV^T" << endl;
+    cout << "-------------------" << endl;
+    SVD(S, A, m, n);
     return 0;
 }

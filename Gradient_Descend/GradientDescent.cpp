@@ -44,7 +44,7 @@ double grad_momentum(double x, int n, double e, char f){
 
 double newton(double x, int n, char f){
     for (int i=0;i<n;i++){
-        x = x - deriv(x,f)/deriv2(x,f);
+        x = x - deriv(x,f)/deriv(x,f);
     }
     return x;
 }

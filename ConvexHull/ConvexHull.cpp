@@ -1,172 +1,117 @@
 #include <iostream>
-#include <stack>
-#include <vector>
-#include <cmath>
-#include <algorithm>
-
 using namespace std;
-
-struct Point
+#define N 500
+typedef struct
 {
-    int x, y;
-};
+    double x;
+    double y;
+} point;
 
-Point p0;
-
-Point nextToTop(stack<Point> &S)
+double det(point &p, point &q, point &r)
 {
-    Point p = S.top();
-    S.pop();
-    Point res = S.top();
-    S.push(p);
-    return res;
+    double d1, d2;
+    d1 = q.x * r.y + p.x * q.y + p.y * r.x;
+    d2 = q.x * p.y + p.x * r.y + r.x * q.y;
+    return d1 - d2;
 }
 
-void swap(Point &p1, Point &p2)
+float area(point *a, int n)
 {
-    Point temp = p1;
-    p1 = p2;
-    p2 = temp;
-}
-
-int distSq(Point p1, Point p2)
-{
-    return (p1.x - p2.x) * (p1.x - p2.x) +
-           (p1.y - p2.y) * (p1.y - p2.y);
-}
-
-int orientation(Point p, Point q, Point r)
-{
-    int val = (q.y - p.y) * (r.x - q.x) -
-              (q.x - p.x) * (r.y - q.y);
-
-    if (val == 0)
-        return 0;
-    return (val > 0) ? 1 : 2;
-}
-
-int compare(const void *vp1, const void *vp2)
-{
-    Point *p1 = (Point *)vp1;
-    Point *p2 = (Point *)vp2;
-
-    int o = orientation(p0, *p1, *p2);
-    if (o == 0)
-        return (distSq(p0, *p2) >= distSq(p0, *p1)) ? -1 : 1;
-
-    return (o == 2) ? -1 : 1;
-}
-
-void convexHull(Point points[], int n)
-{
-    int ymin = points[0].y, minIndex = 0;
-    for (int i = 1; i < n; i++)
+    float s = 0;
+    for (int i = 1; i <= n; i++)
     {
-        int y = points[i].y;
-
-        if ((y < ymin) || (ymin == y &&
-                           points[i].x < points[minIndex].x))
-            ymin = points[i].y, minIndex = i;
-    }
-
-    swap(points[0], points[minIndex]);
-
-    p0 = points[0];
-    qsort(&points[1], n - 1, sizeof(Point), compare);
-
-    int m = 1;
-    for (int i = 1; i < n; i++)
-    {
-        while (i < n - 1 && orientation(p0, points[i], points[i + 1]) == 0)
-            i++;
-
-        points[m] = points[i];
-        m++;
-    }
-
-    if (m < 3)
-        return;
-
-    stack<Point> S;
-    S.push(points[0]);
-    S.push(points[1]);
-    S.push(points[2]);
-
-    for (int i = 3; i < m; i++)
-    {
-        while (S.size() > 1 && orientation(nextToTop(S), S.top(), points[i]) != 2)
-            S.pop();
-        S.push(points[i]);
-    }
-
-    // Tính diện tích của bao lồi
-    double area = 0.0;
-    vector<Point> convexHullPoints;
-    while (!S.empty())
-    {
-        Point p = S.top();
-        convexHullPoints.push_back(p);
-        S.pop();
-    }
-
-    for (int i = 0; i < convexHullPoints.size(); i++)
-    {
-        int j = (i + 1) % convexHullPoints.size();
-        area += (convexHullPoints[i].x * convexHullPoints[j].y - convexHullPoints[j].x * convexHullPoints[i].y);
-    }
-    area = abs(area) / 2.0;
-
-    cout << "Bao loi duoc tim thay: ";
-    for (int i = 0; i < convexHullPoints.size(); i++)
-    {
-        cout << "(" << convexHullPoints[i].x << ", " << convexHullPoints[i].y << ") ";
-    }
-    cout << endl;
-    cout << "Dien tich cua bao loi: " << area << endl;
-
-    // Tính khoảng cách ngắn nhất giữa các đỉnh
-    double minDist = INT_MAX;
-    for (int i = 0; i < convexHullPoints.size(); i++)
-    {
-        for (int j = i + 1; j < convexHullPoints.size(); j++)
+        if (i == n)
         {
-            int dist = distSq(convexHullPoints[i], convexHullPoints[j]);
-            minDist = min(minDist, (double)dist);
+            s += a[i].x * a[1].y - a[i].y * a[1].x;
+        }
+        else
+        {
+            s += a[i].x * a[i + 1].y - a[i].y * a[i + 1].x;
         }
     }
+    return abs(s) / 2;
+}
 
-    cout << "Khoang cach ngan nhat giua cac dinh cua bao loi: " << sqrt(minDist) << endl;
-
-    minDist = INT_MAX;
-    for (int i = 0; i < n; i++)
+void ConvexHull(point *a, const int &n)
+{
+    int i, j, j1, j2, n2;
+    point tg, Lupp[N], Llow[N];
+    cout << "\nTap hop diem: ";
+    for (i = 1; i <= n; i++)
+        cout << "(" << a[i].x << "," << a[i].y << "), ";
+    cout << endl;
+    // sort các điểm theo buble sort
+    for (i = 1; i <= n - 1; i++)
     {
-        for (int j = i + 1; j < n; j++)
+        for (j = n - 1; j >= i; j--)
         {
-            double dist = sqrt(distSq(points[i], points[j]));
-            if (dist < minDist)
+            if ((a[j].x > a[j + 1].x) || ((a[j].x == a[j + 1].x) && (a[j].y > a[j + 1].y)))
             {
-                minDist = dist;
+                tg = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = tg;
             }
         }
     }
-    cout << "Khoang cach ngan nhat giua cac diem ben trong bao loi: " << minDist << endl;
+    // tính tập L upper
+    Lupp[1] = a[1];
+    Lupp[2] = a[2];
+    j1 = 2;
+    for (i = 3; i <= n; i++)
+    {
+        j1++;
+        Lupp[j1] = a[i];
+        while ((j1 > 2) && (det(Lupp[j1 - 2], Lupp[j1 - 1], Lupp[j1]) > -0.001))
+        {
+            Lupp[j1 - 1] = Lupp[j1];
+            j1--;
+        }
+    }
+    // tính tập L lower
+    Llow[1] = a[n];
+    Llow[2] = a[n - 1];
+    j2 = 2;
+    for (i = n - 2; i >= 1; i--)
+    {
+        j2++;
+        Llow[j2] = a[i];
+        while ((j2 > 2) && (det(Llow[j2 - 2], Llow[j2 - 1], Llow[j2]) > -0.001))
+        {
+            Llow[j2 - 1] = Llow[j2];
+            j2--;
+        }
+    }
+    // Xóa điểm đầu và cuối của tập bao lồi dưới
+    // Hợp hai tập bao lồi trên và bao lồi dưới lại với nhau
+    for (i = 1; i <= j2 - 2; i++)
+        Lupp[j1 + i] = Llow[i + 1];
+    n2 = j1 + j2 - 2;
+    cout << "\nTap bao loi la: ";
+    for (i = 1; i <= n2; i++)
+    {
+        cout << "(" << Lupp[i].x << "," << Lupp[i].y << "), ";
+    }
+
+    cout << "\n\nDien tich bao loi la: " << area(Lupp, n2);
+    cout << endl;
 }
 
 int main()
 {
-    Point points[100];
-    cout << "Nhap so luong diem:";
     int n;
+    point points[N];
+    points[0] = {0, 0};  // Added missing semicolon here
+    point p;
+    cout << "Nhap so diem n = ";
     cin >> n;
-    for (int i = 0; i < n; i++)
+    for (int i = 1; i <= n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        Point temp;
-        temp.x = a;
-        temp.y = b;
-        points[i] = temp;
+        cout << "Nhap x" << i << " = ";
+        cin >> p.x;
+        cout << "Nhap y" << i << " = ";
+        cin >> p.y;
+        points[i] = {p.x, p.y};  // Added missing semicolon here
     }
-    convexHull(points, n);
+    ConvexHull(points, n);
     return 0;
 }
